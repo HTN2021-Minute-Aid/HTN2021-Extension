@@ -86,7 +86,6 @@ const addCaptionMO = () => {
             disconnect();
             sessions[parseInt(element.id)] = undefined;
           }
-          console.log(captions);
           console.log('caption session disappeared');
         }
       });
@@ -105,7 +104,6 @@ const addBodyMO = () => {
     mutationList.forEach((mutation: MutationRecord) => {
       if ((<Element>mutation.target).className === joinedBodyClass) {
         console.log((<Element>mutation.target).className);
-        // document.dispatchEvent(new CustomEvent('start'));
         document.dispatchEvent(new CustomEvent('joined'));
         observer.disconnect();
       }

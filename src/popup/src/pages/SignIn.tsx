@@ -4,7 +4,6 @@ import React, {useContext} from 'react';
 import {jsx, SxStyleProp, useColorMode} from 'theme-ui';
 import "@firebase/auth";
 import { IUserContext, UserContext } from '../util/context';
-import { initialize } from '../util/firebase';
 
 
 export const SignIn: React.FC = () => {
@@ -13,21 +12,24 @@ export const SignIn: React.FC = () => {
 
 
   const signUp = async() => {
-    initialize();
-    chrome.identity.getAuthToken({ 'interactive': true }, async(token) => {
-      const credential = firebase.auth.GoogleAuthProvider.credential(null, token);
-      const userInfo = await firebase.auth().signInWithCredential(credential);
-      const userId = userInfo.user.uid;
-      setUserId(userId);
-      setLoggedIn(true);
-      chrome.storage.sync.set({userId: userId}, () => console.log('updated userId'));
-    });
+    const authProvider = new firebase.auth.GoogleAuthProvider();
+    authProvider.setCustomParameters({
+      prompt: 'select_account',
+    })
+    const userInfo = await firebase.auth().signInWithPopup(authProvider);
+    const userId = userInfo.user.uid;
+    setUserId(userId);
+    setLoggedIn(true);
+    chrome.storage.sync.set({userId: userId}, () => console.log('updated userId'));
   };
 
   const style: SxStyleProp = {
     width: '100%',
     borderColor: 'transparent',
     wordWrap: 'normal',
+    bg: 'primary',
+    color: 'text.contrast',
+    height: '100%',
   };
 
   return (

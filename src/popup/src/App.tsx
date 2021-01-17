@@ -10,6 +10,7 @@ import { JoinMeets } from './pages/JoinMeets';
 import { SignIn } from './pages/SignIn';
 import { Home } from './pages/Home';
 import { IUserContext, UserContext } from './util/context';
+import {initializeFirebase} from './util/firebase';
 
 export const App: React.FC = () => {
   const [joined, setJoined] = useState<boolean>(false);
@@ -36,6 +37,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     initialize();
+    initializeFirebase();
   }, []);
 
   const userContext: IUserContext = {

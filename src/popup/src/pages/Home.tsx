@@ -1,17 +1,25 @@
 /** @jsx jsx */
+import firebase from '@firebase/app';
 import React, {useContext, useEffect, useState} from 'react';
-import {jsx, SxStyleProp, useColorMode} from 'theme-ui';
-import { getActiveTabId } from '../util/functions';
+import {jsx, SxStyleProp} from 'theme-ui';
+import { getActiveTabId, getActiveTabUrl } from '../util/functions';
+import '@firebase/auth';
+import { IUserContext, UserContext } from '../util/context';
 
 
 export const Home: React.FC = () => {
   const [title, setTitle] = useState<string>('');
   const [isRecording, setIsRecording] = useState<boolean>(false);
 
+  const {setLoggedIn, setUserId} = useContext<IUserContext>(UserContext);
+
   const initialize = async() => {
-    const result = await chrome.storage.local.get(['title', 'isRecording']);
-    setTitle(result.title);
-    setIsRecording(result.isRecording);
+    const tabUrl = await getActiveTabUrl();
+    const result = await chrome.storage.local.get(
+      [`title${tabUrl}`, `isRecording${tabUrl}`]
+    );
+    setTitle(result[`title${tabUrl}`]);
+    setIsRecording(result[`isRecording${tabUrl}`]);
   };
 
   useEffect(() => {initialize()}, []);
@@ -38,22 +46,31 @@ export const Home: React.FC = () => {
       );
     }
 
-
+    const tabUrl = await getActiveTabUrl();
     setIsRecording((isRecording) => {
       chrome.storage.local.set({
-        // isRecording: false,
-        isRecording: !isRecording,
+        [`isRecording${tabUrl}`]: !isRecording,
       });
       return !isRecording;
     });
   };
 
 
-  const editTitle = (title: string) => {
+  const editTitle = async(title: string) => {
     setTitle(title);
+    const tabUrl = await getActiveTabUrl();
     chrome.storage.local.set({
-      title: title,
+      [`title${tabUrl}`]: title,
     });
+  };
+
+  const signOut = () => {
+    firebase.auth().signOut();
+    
+    setLoggedIn(false);
+    setUserId(undefined);
+    chrome.storage.sync.remove(['userId']);
+    console.log('user signed out');
   };
 
 
@@ -63,7 +80,6 @@ export const Home: React.FC = () => {
     px: 'bodyWrapper.px',
     py: 'bodyWrapper.py',
     width: '100%',
-    height: '50%',
   };
 
   const wrapperStyle: SxStyleProp = {
@@ -76,6 +92,8 @@ export const Home: React.FC = () => {
     fontFamily: 'body',
     color: 'text.contrast',
     borderWidth: 0,
+    py: '0.5em',
+    my: 10,
   };
 
 
@@ -91,6 +109,10 @@ export const Home: React.FC = () => {
         sx={buttonStyle}
         onClick={toggleRecording}
       >{isRecording ? 'Stop' : 'Start'}</button>
+      <button
+        sx={buttonStyle}
+        onClick={signOut}
+      >Sign out</button>
     </div>
   );
 };

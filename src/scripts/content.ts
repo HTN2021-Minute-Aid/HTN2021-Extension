@@ -3,7 +3,7 @@ export interface Caption {
   content: string;
 }
 export interface Transcript {
-  ownerId: string;
+  ownerID: string;
   title: string;
   content: Caption[];
 }
@@ -14,6 +14,27 @@ script.src = chrome.runtime.getURL('scripts/inject.js');
 
 let joined = false;
 let title = '';
+
+const postTranscript = async(transcript: Transcript) => {
+  const url = 'https://minute-aid.herokuapp.com/transcripts/add';
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(transcript),
+  });
+  console.log(await response.json());
+};
+
+const clearSiteStorage = () => {
+  const tabUrl = location.href;
+  chrome.storage.local.remove([`title${tabUrl}`, `isRecording${tabUrl}`]);
+  console.log('cleared');
+};
+
+clearSiteStorage();
 
 //return true indicates async
 chrome.runtime.onMessage.addListener(async (msg, sender, res) => {
@@ -51,10 +72,11 @@ document.addEventListener('captions', async(event) => {
   const captions = typedEvent.detail.content;
   console.log(typedEvent.detail);
   const transcript: Transcript = {
-    ownerId: await getUserId(),
+    ownerID: await getUserId(),
     title: title,
     content: captions,
   };
+  postTranscript(transcript);
   console.log(transcript);
 });
 
