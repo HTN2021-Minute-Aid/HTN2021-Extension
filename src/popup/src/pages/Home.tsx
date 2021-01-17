@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import firebase from '@firebase/app';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {jsx, SxStyleProp} from 'theme-ui';
 import { getActiveTabId, getActiveTabUrl } from '../util/functions';
 import '@firebase/auth';
@@ -10,6 +10,7 @@ import { IUserContext, UserContext } from '../util/context';
 export const Home: React.FC = () => {
   const [title, setTitle] = useState<string>('');
   const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [showWarningMsg, setShowWarningMsg] = useState<boolean>(false);
 
   const {setLoggedIn, setUserId} = useContext<IUserContext>(UserContext);
 
@@ -26,6 +27,11 @@ export const Home: React.FC = () => {
 
   const toggleRecording = async() => {
     if (isRecording) {
+      console.log(title);
+      if (title === '') {
+        setShowWarningMsg(true);
+        return;
+      }
       chrome.tabs.sendMessage(
         await getActiveTabId(),
         {
@@ -36,6 +42,7 @@ export const Home: React.FC = () => {
           console.log(response);
         },
       );
+      editTitle('');
     } else {
       chrome.tabs.sendMessage(
         await getActiveTabId(),
@@ -58,6 +65,9 @@ export const Home: React.FC = () => {
 
   const editTitle = async(title: string) => {
     setTitle(title);
+    if (showWarningMsg && title !== '') {
+      setShowWarningMsg(false);
+    }
     const tabUrl = await getActiveTabUrl();
     chrome.storage.local.set({
       [`title${tabUrl}`]: title,
@@ -66,7 +76,7 @@ export const Home: React.FC = () => {
 
   const signOut = () => {
     firebase.auth().signOut();
-    
+
     setLoggedIn(false);
     setUserId(undefined);
     chrome.storage.sync.remove(['userId']);
@@ -89,12 +99,22 @@ export const Home: React.FC = () => {
   const buttonStyle: SxStyleProp = {
     bg: 'primary',
     width: '100%',
-    fontFamily: 'body',
     color: 'text.contrast',
     borderWidth: 0,
     py: '0.5em',
     my: 10,
   };
+
+  const WarningMsg = React.memo(() => {
+    const style: SxStyleProp = {
+      color: 'primary',
+      fontSize: 'small',
+      textAlign: 'center',
+      display: 'block',
+    };
+
+    return <p sx={style}>Please provide a title</p>;
+  });
 
 
   return (
@@ -105,6 +125,7 @@ export const Home: React.FC = () => {
         value={title}
         onChange={(event) => editTitle(event.target.value)}
       />
+      {showWarningMsg ? <WarningMsg/> : null}
       <button
         sx={buttonStyle}
         onClick={toggleRecording}

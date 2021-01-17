@@ -37,6 +37,12 @@
       "description": "search for text"
     }
   },
+  "icons": {
+    "32": "logo/icon32.png",
+    "48": "logo/icon48.png",
+    "64": "logo/icon64.png",
+    "128": "logo/icon128.png"
+  },
   "manifest_version": 2,
   "content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com https://apis.google.com; object-src 'self'"
 }
