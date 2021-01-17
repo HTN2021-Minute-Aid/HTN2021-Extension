@@ -1,18 +1,19 @@
-import { Caption } from "../common/types";
-
+export interface Caption {
+  name: string;
+  content: string;
+}
+export interface Transcript {
+  ownerId: string;
+  title: string;
+  content: Caption[];
+}
 //inject the getting captions script
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('scripts/inject.js');
 (document.head || document.documentElement).appendChild(script);
 
-let captions: Caption[] = [];
-let pending = true;
 let joined = false;
-
-const waitForCaptions = (): Promise<void> => new Promise((resolve) => {
-  while (pending) {}
-  resolve();
-});
+let title = '';
 
 //return true indicates async
 chrome.runtime.onMessage.addListener(async (msg, sender, res) => {
@@ -26,9 +27,8 @@ chrome.runtime.onMessage.addListener(async (msg, sender, res) => {
       break;
     case 'stop':
       document.dispatchEvent(new CustomEvent('stop'));
-      await waitForCaptions();
-      pending = true;
-      res({message: 'success', captions: captions});
+      title = msg.title;
+      res({message: 'success'});
       break;
     default:
       res({message: `action not found ${msg.action}`});
@@ -37,12 +37,25 @@ chrome.runtime.onMessage.addListener(async (msg, sender, res) => {
   return true;
 });
 
+const getUserId = async() => {
+  const userId: string = await new Promise((resolve) => {
+    chrome.storage.sync.get(['userId'], (result) => {
+      resolve(result.userId);
+    });
+  });
+  return userId;
+};
 
-document.addEventListener('captions', (event) => {
+document.addEventListener('captions', async(event) => {
   const typedEvent: CustomEvent = <CustomEvent>event;
-  console.log('content', typedEvent.detail.captions);
-  captions = typedEvent.detail.captions;
-  pending = false;
+  const captions = typedEvent.detail.content;
+  console.log(typedEvent.detail);
+  const transcript: Transcript = {
+    ownerId: await getUserId(),
+    title: title,
+    content: captions,
+  };
+  console.log(transcript);
 });
 
 

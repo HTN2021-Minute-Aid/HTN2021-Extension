@@ -1,4 +1,4 @@
-import { Caption } from "../common/types";
+import { Caption } from "./content";
 
 console.log('script successfully injected');
 
@@ -38,9 +38,8 @@ const addSessionMO = (session: Element) => {
             const text = (<Element>spanWrapper.childNodes.item(0)).innerHTML;
             return sentence + ' ' + text;
           }, '');
-          console.log('sentence'+sentence);
+          console.log(sentence);
           captions[parseInt(id)].content = sentence;
-          console.log(captions);
         }
       });
     });
@@ -120,7 +119,7 @@ const addBodyMO = () => {
 
 addBodyMO();
 
-let captionMoDisconnect: Function;
+let captionMoDisconnect: () => void;
 
 document.addEventListener('start', (event) => {
   getElement(captionButtonClass).click();
@@ -129,14 +128,20 @@ document.addEventListener('start', (event) => {
 
 document.addEventListener('stop', (event) => {
   getElement(captionButtonClass).click();
-  if (captionMoDisconnect) captionMoDisconnect();
+  // if (captionMoDisconnect) {
+  //   console.log('klsdjflksdjfl');
+  //   captionMoDisconnect();
+  //   console.log('whyyy');
+  // }
   document.dispatchEvent(new CustomEvent('captions', {
     detail: {
       content: captions,
     }
   }))
+  console.log(captions);
   captions.splice(0, captions.length);
   sessions.splice(0, sessions.length);
   curIdx = 0;
+  console.log('captions sent');
 });
 console.log('script loaded');

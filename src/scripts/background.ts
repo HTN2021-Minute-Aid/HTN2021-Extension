@@ -17,3 +17,7 @@ chrome.runtime.onInstalled.addListener(() => {
     ]);
   });
 });
+
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.clear();
+});
