@@ -1,3 +1,5 @@
+import { Caption } from "../common/types";
+
 console.log('script successfully injected');
 
 const captionWrapperClass: string = 'a4cQT';
@@ -11,40 +13,11 @@ const captionSession = {
 const joinedBodyClass: string = 'EIlDfe T3F3Rd';
 
 
-
-/**
- * sends the caption to the extension
- */
-// const sendCaptions = async (): Promise<void> => {
-
-
-//   document.dispatchEvent(
-//     new CustomEvent('transcript', {
-//       detail: null,
-//     }),
-//   );
-//   // console.log('sent new caption track');
-//   // console.log(captionTracks);
-// };
-
-
-
 const getElement = (className: string): HTMLElement => {
   return <HTMLDivElement>Array.from(
     document.getElementsByClassName(className)
   )[0];
 };
-
-interface Caption {
-  name: string;
-  content: string;
-}
-
-interface SendCaptions {
-  ownerId: string;
-  title: string;
-  content: Caption[];
-}
 
 const captions: Caption[] = [];
 const sessions: (Function|undefined)[] = [];
@@ -93,7 +66,11 @@ const addCaptionMO = () => {
             sessions[curIdx] = addSessionMO(element);
             captions[curIdx] = {
               name: (<Element>element.childNodes.item(1)).innerHTML,
-              content: (<Element>element.childNodes.item(2).childNodes.item(0).childNodes.item(0).childNodes.item(0)).innerHTML
+              content: (<Element>element.childNodes.item(2)
+                        .childNodes.item(0)
+                        .childNodes.item(0)
+                        .childNodes.item(0))
+                        .innerHTML
             };
 
             curIdx++;
@@ -129,7 +106,8 @@ const addBodyMO = () => {
     mutationList.forEach((mutation: MutationRecord) => {
       if ((<Element>mutation.target).className === joinedBodyClass) {
         console.log((<Element>mutation.target).className);
-        document.dispatchEvent(new CustomEvent('loaded'));
+        // document.dispatchEvent(new CustomEvent('start'));
+        document.dispatchEvent(new CustomEvent('joined'));
         observer.disconnect();
       }
     });
@@ -161,6 +139,4 @@ document.addEventListener('stop', (event) => {
   sessions.splice(0, sessions.length);
   curIdx = 0;
 });
-console.log('loading finished');
-
-// sendCaptions();
+console.log('script loaded');

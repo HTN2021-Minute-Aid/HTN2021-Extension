@@ -6,9 +6,9 @@ chrome.runtime.onInstalled.addListener(() => {
         conditions: [
           new chrome.declarativeContent.PageStateMatcher({
             pageUrl: {
-              hostEquals: 'www.meet.google.com',
+              hostEquals: 'meet.google.com',
               schemes: ['https'],
-              // pathPrefix: '/watch',
+              // pathPrefix: '/',
             },
           }),
         ],

@@ -25,6 +25,6 @@
     "watch": "npm-run-all --parallel watch:*",
     "build": "npm run build:scripts && npm run build:manifest && npm run build:popup",
     "start": "npm run watch",
-    "extension-build": "rm -r dist && npm run build && zip -r YCS.zip dist"
+    "extension-build": "rm -r dist && npm run build && zip -r minute-aid.zip dist"
   }
 }
